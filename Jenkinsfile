@@ -1,28 +1,19 @@
 
-
 pipeline {
-  agent any
-  tools {
-    maven 'maven2'
-  }
-  stages{
-
-    stage("SCM fetch"){
-
-        steps{
-
-            
+    agent any
+    tools {
+        maven 'maven3'
+    }
+    stages {
+        stage('Fetch Code') {
+            steps {
+                git 'https://github.com/sulazo/JenkinsCICD.git'
+            }
+        }
+        stage('Maven Build') {
+            steps {
+                sh 'mvn clean package'
+            }
         }
     }
-    stage("Maven Build"){
-      steps{
-        sh "mvn clean package"
-      }
-    }
-    stage("Deploy To Dev"){
-      steps{
-        tomcatDeploy("tomcat-dev","ec2-user",["172.31.13.89","172.31.13.89"])
-      }
-    }
-  }
 }
