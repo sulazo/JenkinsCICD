@@ -13,8 +13,18 @@ pipeline {
         }
         stage('Maven Build') {
             steps {
-                sh 'mvn clean package'
+                sh 'mvn install -DskipTests'
             }
+        }
+        post{
+            success{
+                echo "Now archiving"
+            }
+        }
+
+
+        stage("Unit test"){
+            sh "mvn test"
         }
     }
 }
