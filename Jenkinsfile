@@ -7,8 +7,8 @@ pipeline {
     stages {
         stage('Fetch Code') {
             steps {
-                 git 'git@github.com:sulazo/JenkinsCICD.git
-                //  git branch: 'main', url: 'https://github.com/sulazo/JenkinsCICD.git'
+                 //git 'git@github.com:sulazo/JenkinsCICD.git
+                 git branch: 'main', url: 'https://github.com/sulazo/JenkinsCICD.git'
             }
         }
         stage('Maven Build') {
