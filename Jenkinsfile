@@ -15,12 +15,13 @@ pipeline {
             steps {
                 sh 'mvn install -DskipTests'
             }
-        }
-        post{
+               post{
             success{
                 echo "Now archiving"
             }
         }
+        }
+     
 
 
         stage("Unit test"){
