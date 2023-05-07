@@ -8,7 +8,7 @@ pipeline {
         stage('Fetch Code') {
             steps {
                 // git 'https://github.com/sulazo/JenkinsCICD.git'
-                  git branch: 'feature1', url: 'https://github.com/sulazo/smanstudios-complete-CICD.git'
+                  git branch: 'main', url: 'https://github.com/sulazo/smanstudios-complete-CICD.git'
             }
         }
         stage('Maven Build') {
