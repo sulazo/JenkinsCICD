@@ -6,8 +6,8 @@ pipeline {
     }
     environment {
         registryCredential = 'ecr:us-east-1:awscreds'
-        appRegistry = "665276824202.dkr.ecr.us-east-2.amazonaws.com/vprofileappimg" //copied from AWS ECR repo name
-        vprofileRegistry = "https://665276824202.dkr.ecr.us-east-2.amazonaws.com" //https://<AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com'
+        ecrRepoUri = "665276824202.dkr.ecr.us-east-2.amazonaws.com/vprofileappimg" //copied from AWS ECR repo name
+        ecrRegistryName = "https://665276824202.dkr.ecr.us-east-2.amazonaws.com" //https://<AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com'
     }
   stages {
     stage('Fetch code'){
@@ -64,7 +64,7 @@ pipeline {
        steps {
        
          script {
-                dockerImage = docker.build( "vprofile-docker-app" + ":$BUILD_NUMBER", "./Docker-files/app/multistage/")
+                dockerImage = docker.build( ecrRepoUri + ":$BUILD_NUMBER", "./Docker-files/app/multistage/")
                 // docker build -t mynginx:latest .
              }
      }
@@ -75,7 +75,7 @@ pipeline {
           steps{
             script{
                 withAWS(credentials: 'awscreds', region: 'us-east-1') {
-                        docker.withRegistry("665276824202.dkr.ecr.us-east-2.amazonaws.com/vprofileappimg", 'ecr:us-east-1:awscreds') { 
+                        docker.withRegistry(ecrRegistryName, registryCredential) { 
                             //https://"ecr-repo",""
                             dockerImage.push("$env.BUILD_NUMBER")
                             dockerImage.push("latest")
