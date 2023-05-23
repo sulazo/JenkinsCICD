@@ -1,27 +1,27 @@
 pipeline {
     agent any
     tools {
-        maven "MAVEN3"
-        jdk "OracleJDK8"
+        maven 'MAVEN3'
+        jdk 'OracleJDK8'
     }
     environment {
         registryCredential = 'ecr:us-east-1:awscreds'
-        ecrRepoUri = "665276824202.dkr.ecr.us-east-1.amazonaws.com/vprofileappimg" //copied from AWS ECR repo name
-        ecrRegistryName = "https://665276824202.dkr.ecr.us-east-2.amazonaws.com" //https://<AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com'
+        ecrRepoUri = '665276824202.dkr.ecr.us-east-1.amazonaws.com/vprofileappimg' //copied from AWS ECR repo name
+        ecrRegistryName = 'https://665276824202.dkr.ecr.us-east-1.amazonaws.com' //https://<AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com'
     }
-  stages {
-    stage('Fetch code'){
-      steps {
-        git branch: 'docker', url: 'https://github.com/devopshydclub/vprofile-project.git'
-      }
-    }
-    stage('Test'){
-      steps {
-        sh 'mvn test'
-      }
-    }
+    stages {
+        stage('Fetch code') {
+            steps {
+                git branch: 'docker', url: 'https://github.com/devopshydclub/vprofile-project.git'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
 
-    stage ('CODE ANALYSIS WITH CHECKSTYLE'){
+        stage('CODE ANALYSIS WITH CHECKSTYLE') {
             steps {
                 sh 'mvn checkstyle:checkstyle'
             }
@@ -34,11 +34,11 @@ pipeline {
 
         stage('build && SonarQube analysis') {
             environment {
-             scannerHome = tool 'sonar4.7'
-          }
+                scannerHome = tool 'sonar4.7'
+            }
             steps {
                 withSonarQubeEnv('sonar') {
-                 sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
+                    sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
                    -Dsonar.projectName=vprofile-repo \
                    -Dsonar.projectVersion=1.0 \
                    -Dsonar.sources=src/ \
@@ -50,7 +50,7 @@ pipeline {
             }
         }
 
-        stage("Quality Gate") {
+        stage('Quality Gate') {
             steps {
                 timeout(time: 1, unit: 'HOURS') {
                     // Parameter indicates whether to set pipeline to UNSTABLE if Quality Gate fails
@@ -60,32 +60,25 @@ pipeline {
             }
         }
 
-    stage('Build App Image') {
-       steps {
-       
-         script {
-                dockerImage = docker.build( ecrRepoUri + ":$BUILD_NUMBER", "./Docker-files/app/multistage/")
+        stage('Build App Image') {
+            steps {
+                script {
+                    dockerImage = docker.build(ecrRepoUri + ":$BUILD_NUMBER", './Docker-files/app/multistage/')
                 // docker build -t mynginx:latest .
-             }
-     }
-    
+                }
+            }
+        }
+
+        stage('Upload App Image') {
+            steps {
+                script {
+                        docker.withRegistry(ecrRegistryName, registryCredential) {
+                        dockerImage.push("$env.BUILD_NUMBER")
+                        dockerImage.push('latest')
+                        }
+                }
+            }
+        }
+
     }
-
-    stage('Upload App Image') {
-          steps{
-            script{
-                withAWS(credentials: 'awscreds', region: 'us-east-1') {
-                        docker.withRegistry(ecrRegistryName, registryCredential) { 
-                          
-                            dockerImage.push("$env.BUILD_NUMBER")
-                            dockerImage.push("latest")
-          }
-     }
-          }
-  }
 }
-  
-
-  }
-  
-  }
