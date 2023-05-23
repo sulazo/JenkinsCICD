@@ -1,0 +1,24 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                // Build steps here
+            }
+        }
+        stage('Send Slack Notification') {
+            steps {
+                script {
+                    def buildStatus = currentBuild.result
+                    def message
+                    if (buildStatus == 'SUCCESS') {
+                        message = "Job: ${env.JOB_NAME}, Build Number: ${env.BUILD_NUMBER}, Build succeeded!"
+                    } else {
+                        message = "Job: ${env.JOB_NAME}, Build Number: ${env.BUILD_NUMBER}, Build failed!"
+                    }
+                    slackSend(channel: '#my-slack-channel', message: message)
+                }
+            }
+        }
+    }
+}

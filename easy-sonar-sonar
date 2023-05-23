@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+    tools {
+        maven "MAVEN3"
+        jdk "OracleJDK8"
+    }
+    stages{
+        stage('Fetch code') {
+          steps{
+              git branch: 'vp-rem', url:'https://github.com/devopshydclub/vprofile-repo.git'
+          }  
+        }
+
+        stage('Build') {
+            // steps {
+            //     sh 'mvn clean install -DskipTests'
+            // }
+            steps {
+                 sh "mvn clean package sonar:sonar -Dsonar.host.url=http://10.0.2.238 -Dsonar.login=sonartoken"
+                   }
+            post {
+                success {
+                    echo "Now Archiving."
+                    archiveArtifacts artifacts: '**/*.war'
+                }
+            }
+        }
+           
+     
+
+        stage("UploadArtifact"){
+            steps{
+                nexusArtifactUploader(
+                  nexusVersion: 'nexus3',
+                  protocol: 'http',
+                  nexusUrl: '10.0.9.99:8081',
+                  groupId: 'QA',
+                  version: "${env.BUILD_ID}-${env.BUILD_TIMESTAMP}",
+                //  env.BUILD_ID way to call jenkins environment variable
+                //sh echo $MY_VAR to declare variable define in the current  pipeline 
+                  repository: 'vprofile-repo',
+                  credentialsId: 'nexuslogin',
+                  artifacts: [
+                    [artifactId: 'vproapp',
+                     classifier: '',
+                     file: 'target/vprofile-v2.war',
+                     type: 'war']
+    ]
+ )
+            }
+        }
+
+
+
+    }
+}
