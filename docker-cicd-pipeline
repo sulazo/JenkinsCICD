@@ -6,7 +6,7 @@ pipeline {
     }
     environment {
         registryCredential = 'ecr:us-east-1:awscreds'
-        ecrRepoUri = "665276824202.dkr.ecr.us-east-2.amazonaws.com/vprofileappimg" //copied from AWS ECR repo name
+        ecrRepoUri = "665276824202.dkr.ecr.us-east-1.amazonaws.com/vprofileappimg" //copied from AWS ECR repo name
         ecrRegistryName = "https://665276824202.dkr.ecr.us-east-2.amazonaws.com" //https://<AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com'
     }
   stages {
@@ -76,7 +76,7 @@ pipeline {
             script{
                 withAWS(credentials: 'awscreds', region: 'us-east-1') {
                         docker.withRegistry(ecrRegistryName, registryCredential) { 
-                            //https://"ecr-repo",""
+                          
                             dockerImage.push("$env.BUILD_NUMBER")
                             dockerImage.push("latest")
           }
